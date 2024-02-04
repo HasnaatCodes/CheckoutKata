@@ -16,10 +16,10 @@ public class ProductDatabaseContext : DbContext
         modelBuilder.Entity<Product>().HasKey(p => p.Sku);
         
         modelBuilder.Entity<Product>().HasData(
-            new Product { Sku = "A", RegularPrice = 50.0, SpecialPrice = 130.0, QuantityRequiredForSpecialPrice = 3 },
-            new Product { Sku = "B", RegularPrice = 30.0, SpecialPrice = 45.0, QuantityRequiredForSpecialPrice = 2 },
-            new Product { Sku = "C", RegularPrice = 20.0},
-            new Product { Sku = "D", RegularPrice = 15.0}
+            new Product { Sku = "A", RegularPrice = 50, SpecialPrice = 130, QuantityRequiredForSpecialPrice = 3 },
+            new Product { Sku = "B", RegularPrice = 30, SpecialPrice = 45, QuantityRequiredForSpecialPrice = 2 },
+            new Product { Sku = "C", RegularPrice = 20},
+            new Product { Sku = "D", RegularPrice = 15}
         );
     }
 }
