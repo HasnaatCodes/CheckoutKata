@@ -1,22 +1,30 @@
+using CheckoutKata.DatabaseContext;
+
 namespace CheckoutKata;
 
 public class Checkout : ICheckout
 {
-    private int total = 0;
+    private readonly ProductDatabaseContext _dbContext;
+    private double _total = 0;
 
-    private Dictionary<string, int> value = new Dictionary<string, int>
+    public Checkout(ProductDatabaseContext dbContext)
     {
-        { "A", 10 },
-        { "B", 5 }
-    };
+        _dbContext = dbContext;
+        _dbContext.Database.EnsureCreated();
+    }
     
     public void Scan(string item)
     {
-        total += value[item];
+        var productDetails = _dbContext.Products.FirstOrDefault(x => x.Sku == item);
+
+        if (productDetails != null)
+        {
+            _total += productDetails.RegularPrice;
+        }
     }
 
-    public int GetTotalPrice()
+    public double GetTotalPrice()
     {
-        return total;
+        return _total;
     }
 }
