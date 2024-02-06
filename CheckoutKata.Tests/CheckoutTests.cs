@@ -91,6 +91,100 @@ public class Tests
     }
     
     [Test]
+    public void AddMultipleItemsWithSpecialOfferTwice_OfSameType_ShouldReturnCorrectTotal()
+    {
+        // Arrange
+        ICheckout checkout = new Checkout(new ProductDatabaseContext());
+        
+        // Act
+        checkout.Scan("B");
+        checkout.Scan("B");
+        checkout.Scan("B");
+        checkout.Scan("B");
+        var actual = checkout.GetTotalPrice();
+        
+        // Assert
+        Assert.That(actual, Is.EqualTo(90));
+    }
+    
+    [Test]
+    public void AddOddMultipleItemsWithSpecialOfferTwice_OfSameType_ShouldReturnCorrectTotal()
+    {
+        // Arrange
+        ICheckout checkout = new Checkout(new ProductDatabaseContext());
+        
+        // Act
+        checkout.Scan("B");
+        checkout.Scan("B");
+        checkout.Scan("B");
+        checkout.Scan("B");
+        checkout.Scan("B");
+        var actual = checkout.GetTotalPrice();
+        
+        // Assert
+        Assert.That(actual, Is.EqualTo(120));
+    }
+    
+    [Test]
+    public void AddMultipleItemsWithSpecialOfferTwice_OfDifferentType_ShouldReturnCorrectTotal()
+    {
+        // Arrange
+        ICheckout checkout = new Checkout(new ProductDatabaseContext());
+        
+        // Act
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        
+        
+        checkout.Scan("B");
+        checkout.Scan("B");
+        
+        checkout.Scan("B");
+        checkout.Scan("B");
+        
+        var actual = checkout.GetTotalPrice();
+        
+        // Assert
+        Assert.That(actual, Is.EqualTo(350));
+    }
+    
+    [Test]
+    public void AddOddMultipleItemsWithSpecialOfferTwice_OfDifferentType_ShouldReturnCorrectTotal()
+    {
+        // Arrange
+        ICheckout checkout = new Checkout(new ProductDatabaseContext());
+        
+        // Act
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        
+        checkout.Scan("A");
+        
+        checkout.Scan("B");
+        checkout.Scan("B");
+        
+        checkout.Scan("B");
+        checkout.Scan("B");
+        
+        checkout.Scan("B");
+        
+        var actual = checkout.GetTotalPrice();
+        
+        // Assert
+        Assert.That(actual, Is.EqualTo(430));
+    }
+    
+    [Test]
     public void EmptyCart_ShouldReturnZero()
     {
         // Arrange
