@@ -1,8 +1,6 @@
-using CheckoutKata;
 using CheckoutKata.DatabaseContext;
-using Moq;
 
-namespace TestProject1;
+namespace CheckoutKata.Tests;
 
 public class Tests
 {
