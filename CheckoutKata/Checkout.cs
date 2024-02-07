@@ -1,4 +1,5 @@
 using CheckoutKata.DatabaseContext;
+using CheckoutKata.Exceptions;
 
 namespace CheckoutKata;
 
@@ -6,7 +7,8 @@ public class Checkout : ICheckout
 {
     private readonly ProductDatabaseContext _dbContext;
     private readonly Dictionary<string, int> _cart = new();
-    private int _total;
+    private decimal _total;
+    private decimal _totalSavings; 
 
     public Checkout(ProductDatabaseContext dbContext)
     {
@@ -16,17 +18,16 @@ public class Checkout : ICheckout
     
     public void Scan(string item)
     {
-        var productDetails = _dbContext.Products.FirstOrDefault(x => x.Sku == item);
-        if (productDetails == null)
+        var product = _dbContext.Products.FirstOrDefault(x => x.Sku == item);
+        if (product == null)
         {
-            return;
+            throw new NotFoundException("Item does not exist.");
         }
         
-        AddToCart(item);
-        _total += productDetails.RegularPrice;
+        AddToCart(product);
     }
     
-    public int GetTotalPrice()
+    public decimal GetTotalPrice()
     {
         var currentItemsInCart = _dbContext.Products
             .Where(p => _cart.ContainsKey(p.Sku))
@@ -44,6 +45,11 @@ public class Checkout : ICheckout
         return _total;
     }
 
+    public decimal GetTotalSavings()
+    {
+        return _totalSavings;
+    }
+
     private void ApplySpecialPrice(int currentQuantity, Product product)
     {
         var timesDiscountWillBeApplied = currentQuantity / product.QuantityRequiredForSpecialPrice;
@@ -51,20 +57,24 @@ public class Checkout : ICheckout
 
         var discountedPrice = timesDiscountWillBeApplied * product.SpecialPrice;
         var regularPrice = nonDiscountedQuantity * product.RegularPrice;
-
-        _total -= currentQuantity * product.RegularPrice;
+        var listedTotalPrice = currentQuantity * product.RegularPrice;
+        
+        _totalSavings += listedTotalPrice - (discountedPrice + regularPrice);
+        _total -= listedTotalPrice;
         _total += discountedPrice + regularPrice;
     }
 
-    private void AddToCart(string item)
+    private void AddToCart(Product product)
     {
-        if (_cart.TryGetValue(item, out var quantity))
+        if (_cart.TryGetValue(product.Sku, out var quantity))
         {
-            _cart[item] = quantity + 1;
+            _cart[product.Sku] = quantity + 1;
         }
         else
         {
-            _cart[item] = 1;
+            _cart[product.Sku] = 1;
         }
+        
+        _total += product.RegularPrice;
     }
 }

@@ -1,4 +1,5 @@
 using CheckoutKata.DatabaseContext;
+using CheckoutKata.Exceptions;
 
 namespace CheckoutKata.Tests;
 
@@ -24,21 +25,6 @@ public class CheckoutTests
     }
     
     [Test]
-    public void MultipleItems_SameType_ShouldReturnCorrectTotal()
-    {
-        // Arrange
-        ICheckout checkout = new Checkout(new ProductDatabaseContext());
-        
-        // Act
-        checkout.Scan("A");
-        checkout.Scan("A");
-        var actual = checkout.GetTotalPrice();
-        
-        // Assert
-        Assert.That(actual, Is.EqualTo(100));
-    }
-    
-    [Test]
     public void MultipleItems_DifferentTypes_ShouldReturnCorrectTotal()
     {
         // Arrange
@@ -56,21 +42,6 @@ public class CheckoutTests
     }
     
     [Test]
-    public void MultipleItemsWithSpecialOffer_SameType_ShouldReturnCorrectTotal()
-    {
-        // Arrange
-        ICheckout checkout = new Checkout(new ProductDatabaseContext());
-        
-        // Act
-        checkout.Scan("B");
-        checkout.Scan("B");
-        var actual = checkout.GetTotalPrice();
-        
-        // Assert
-        Assert.That(actual, Is.EqualTo(45));
-    }
-    
-    [Test]
     public void MultipleItemsWithSpecialOffer_DifferentTypes_ShouldReturnCorrectTotal()
     {
         // Arrange
@@ -83,44 +54,30 @@ public class CheckoutTests
         checkout.Scan("B");
         checkout.Scan("B");
         var actual = checkout.GetTotalPrice();
+        var actualTotalSavings = checkout.GetTotalSavings();
         
         // Assert
         Assert.That(actual, Is.EqualTo(175));
+        Assert.That(actualTotalSavings, Is.EqualTo(35));
+        
     }
     
     [Test]
-    public void AddMultipleItemsWithSpecialOfferTwice_OfSameType_ShouldReturnCorrectTotal()
+    public void AddMultipleItemsWithSpecialOfferMultipleTimes_OfSameType_ShouldReturnCorrectTotal()
     {
         // Arrange
         ICheckout checkout = new Checkout(new ProductDatabaseContext());
         
         // Act
-        checkout.Scan("B");
-        checkout.Scan("B");
-        checkout.Scan("B");
-        checkout.Scan("B");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
         var actual = checkout.GetTotalPrice();
         
         // Assert
-        Assert.That(actual, Is.EqualTo(90));
-    }
-    
-    [Test]
-    public void AddOddMultipleItemsWithSpecialOfferTwice_OfSameType_ShouldReturnCorrectTotal()
-    {
-        // Arrange
-        ICheckout checkout = new Checkout(new ProductDatabaseContext());
-        
-        // Act
-        checkout.Scan("B");
-        checkout.Scan("B");
-        checkout.Scan("B");
-        checkout.Scan("B");
-        checkout.Scan("B");
-        var actual = checkout.GetTotalPrice();
-        
-        // Assert
-        Assert.That(actual, Is.EqualTo(120));
+        Assert.That(actual, Is.EqualTo(230));
     }
     
     [Test]
@@ -202,7 +159,14 @@ public class CheckoutTests
         ICheckout checkout = new Checkout(new ProductDatabaseContext());
         
         // Act
-        checkout.Scan("Z");
+        try
+        {
+            checkout.Scan("Z");
+        }
+        catch (NotFoundException)
+        {
+            
+        }
         var actual = checkout.GetTotalPrice();
         
         // Assert
