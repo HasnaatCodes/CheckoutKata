@@ -2,7 +2,7 @@ using CheckoutKata.DatabaseContext;
 
 namespace CheckoutKata.Tests;
 
-public class Tests
+public class CheckoutTests
 {
     [SetUp]
     public void Setup()
