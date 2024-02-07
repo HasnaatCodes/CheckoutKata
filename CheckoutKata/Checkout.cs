@@ -35,41 +35,36 @@ public class Checkout : ICheckout
         foreach (var product in currentItemsInCart)
         {
             var currentQuantity = _cart[product.Sku];
-
-            if (product.QuantityRequiredForSpecialPrice == 0 || currentQuantity < product.QuantityRequiredForSpecialPrice)
+            if (product.QuantityRequiredForSpecialPrice > 0 && currentQuantity >= product.QuantityRequiredForSpecialPrice)
             {
-                continue;
+                ApplySpecialPrice(currentQuantity, product);
             }
-            
-            var timesDiscountWillBeApplied = currentQuantity / product.QuantityRequiredForSpecialPrice;
-            
-            if (currentQuantity % product.QuantityRequiredForSpecialPrice == 0)
-            {
-                // Subtract all of this product's total from the total currently
-                _total -= currentQuantity * product.RegularPrice;
-            }
-            else
-            {
-                // Subtract the total of number of items currently in cart that will be discounted
-                var quantityBeingDiscounted = timesDiscountWillBeApplied * product.QuantityRequiredForSpecialPrice;
-                _total -= quantityBeingDiscounted * product.RegularPrice;
-            }
-            
-            _total += product.SpecialPrice * timesDiscountWillBeApplied;
         }
         
         return _total;
     }
 
+    private void ApplySpecialPrice(int currentQuantity, Product product)
+    {
+        var timesDiscountWillBeApplied = currentQuantity / product.QuantityRequiredForSpecialPrice;
+        var nonDiscountedQuantity = currentQuantity % product.QuantityRequiredForSpecialPrice;
+
+        var discountedPrice = timesDiscountWillBeApplied * product.SpecialPrice;
+        var regularPrice = nonDiscountedQuantity * product.RegularPrice;
+
+        _total -= currentQuantity * product.RegularPrice;
+        _total += discountedPrice + regularPrice;
+    }
+
     private void AddToCart(string item)
     {
-        if (_cart.ContainsKey(item))
+        if (_cart.TryGetValue(item, out var quantity))
         {
-            _cart[item]++;
+            _cart[item] = quantity + 1;
         }
         else
         {
-            _cart.Add(item, 1);
+            _cart[item] = 1;
         }
     }
 }
