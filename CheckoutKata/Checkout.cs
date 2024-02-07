@@ -23,56 +23,42 @@ public class Checkout : ICheckout
         }
         
         AddToCart(item);
-
-        // var currentQuantity = _cart[item];
-        // if (currentQuantity >= productDetails.QuantityRequiredForSpecialPrice)
-        // {
-        //     ApplySpecialPrice(productDetails);
-        //     return;
-        // }
-        
         _total += productDetails.RegularPrice;
     }
     
     public int GetTotalPrice()
     {
-        // Work out special prices 
-        List<string> currentItemsInCart = _cart.Keys.ToList();
+        var currentItemsInCart = _dbContext.Products
+            .Where(p => _cart.ContainsKey(p.Sku))
+            .ToList();
 
-        foreach (var item in currentItemsInCart)
+        foreach (var product in currentItemsInCart)
         {
-            var currentQuantity = _cart[item];
-            var productDetail = _dbContext.Products.FirstOrDefault(x => x.Sku == item);
-            
-            // if there is a special offer we want to work out the special price
-            if (productDetail?.QuantityRequiredForSpecialPrice > 0 && _cart[item] >= productDetail.QuantityRequiredForSpecialPrice)
+            var currentQuantity = _cart[product.Sku];
+
+            if (product.QuantityRequiredForSpecialPrice == 0 || currentQuantity < product.QuantityRequiredForSpecialPrice)
             {
-                // scenario 1 - RQ = 2, items added = 2
-                // scenario 2 - RQ = 2, items added = 4
-                
-                if (_cart[item] % productDetail.QuantityRequiredForSpecialPrice == 0)
-                {
-                    var timesDiscountWillBeApplied = currentQuantity / productDetail.QuantityRequiredForSpecialPrice;
-                    _total -= currentQuantity * productDetail.RegularPrice;
-                    _total += productDetail.SpecialPrice * timesDiscountWillBeApplied;
-                }
-                else
-                {
-                    var timesDiscountWillBeApplied = currentQuantity / productDetail.QuantityRequiredForSpecialPrice; // 2
-                    var quantityBeingDiscounted = timesDiscountWillBeApplied * productDetail.QuantityRequiredForSpecialPrice;
-                    _total -= quantityBeingDiscounted * productDetail.RegularPrice;
-                    _total += productDetail.SpecialPrice * timesDiscountWillBeApplied;
-                }
+                continue;
             }
+            
+            var timesDiscountWillBeApplied = currentQuantity / product.QuantityRequiredForSpecialPrice;
+            
+            if (currentQuantity % product.QuantityRequiredForSpecialPrice == 0)
+            {
+                // Subtract all of this product's total from the total currently
+                _total -= currentQuantity * product.RegularPrice;
+            }
+            else
+            {
+                // Subtract the total of number of items currently in cart that will be discounted
+                var quantityBeingDiscounted = timesDiscountWillBeApplied * product.QuantityRequiredForSpecialPrice;
+                _total -= quantityBeingDiscounted * product.RegularPrice;
+            }
+            
+            _total += product.SpecialPrice * timesDiscountWillBeApplied;
         }
         
         return _total;
-    }
-
-    private void ApplySpecialPrice(Product product)
-    {
-        _total -= product.RegularPrice * (_cart[product.Sku] - 1);
-        _total += product.SpecialPrice;
     }
 
     private void AddToCart(string item)
