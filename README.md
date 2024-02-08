@@ -9,3 +9,5 @@ Once done scanning, you type 'exit' and it'll return you the Total Savings and T
 If there's an item that doesn't exist, the app will notify you.
 
 There are unit tests included in this application which can be ran.
+
+Dependency Info - This application is based on .NET 7.
